@@ -1,0 +1,26 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "6c3258df-22e9-4103-aef0-56f6a78f2ed1": {
+      "ProjectGuid": "6c3258df-22e9-4103-aef0-56f6a78f2ed1",
+      "DisplayName": "InsertWDServices",
+      "ColorIndex": 0
+    },
+    "b8458724-6e6d-4fb1-9b78-71768847187c": {
+      "ProjectGuid": "b8458724-6e6d-4fb1-9b78-71768847187c",
+      "DisplayName": "ConsoleApplication2",
+      "ColorIndex": 1
+    },
+    "279c1920-3e35-4916-9456-482502fee445": {
+      "ProjectGuid": "279c1920-3e35-4916-9456-482502fee445",
+      "DisplayName": "TimahWithdrawal",
+      "ColorIndex": 2
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 3
+}
