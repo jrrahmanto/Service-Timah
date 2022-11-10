@@ -1298,6 +1298,7 @@ namespace WorkerEmail
                 string url = reportServer + "TIN_EOD_Report/" + filename + "&rs:Command=Render&rs:Format=PDF&rc:OutputFormat=PDF" + parameter;
 
                 System.Net.HttpWebRequest Req = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
+                Req.Timeout = 360000000;
                 Req.Credentials = new NetworkCredential("Administrator", "Jakarta01");
                 Req.Method = "GET";
 
