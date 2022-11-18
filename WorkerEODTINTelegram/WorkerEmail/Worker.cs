@@ -1298,7 +1298,8 @@ namespace WorkerEmail
                 string url = reportServer + "TIN_EOD_Report/" + filename + "&rs:Command=Render&rs:Format=PDF&rc:OutputFormat=PDF" + parameter;
 
                 System.Net.HttpWebRequest Req = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
-                Req.Timeout = 360000000;
+                Req.AllowWriteStreamBuffering = false;
+                Req.Timeout = 3600000;
                 Req.Credentials = new NetworkCredential("Administrator", "Jakarta01");
                 Req.Method = "GET";
 
@@ -1339,6 +1340,8 @@ namespace WorkerEmail
 
                 System.Net.HttpWebRequest Req = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
                 Req.Credentials = new NetworkCredential("Administrator", "Jakarta01");
+                Req.AllowWriteStreamBuffering = false;
+                Req.Timeout = 3600000;
                 Req.Method = "GET";
 
                 string path = AppDomain.CurrentDomain.BaseDirectory + "report\\" + filename + ".xlsx";
@@ -1373,6 +1376,8 @@ namespace WorkerEmail
 
                 System.Net.HttpWebRequest Req = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
                 Req.Credentials = new NetworkCredential("Administrator", "Jakarta01");
+                Req.AllowWriteStreamBuffering = false;
+                Req.Timeout = 3600000;
                 Req.Method = "GET";
 
                 string path = AppDomain.CurrentDomain.BaseDirectory + "report\\" + filename + ".doc";
