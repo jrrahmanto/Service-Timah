@@ -9434,7 +9434,7 @@ SELECT SuretyBondID, BondIssuerID, EntryType, BondSerialNo, InvestorID, Amount, 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         private void InitCommandCollection() {
-            this._commandCollection = new global::System.Data.SqlClient.SqlCommand[2];
+            this._commandCollection = new global::System.Data.SqlClient.SqlCommand[3];
             this._commandCollection[0] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
             this._commandCollection[0].CommandText = "SELECT SKD.ClearingMember.*\r\nFROM   SKD.ClearingMember";
@@ -9446,9 +9446,19 @@ SELECT SuretyBondID, BondIssuerID, EntryType, BondSerialNo, InvestorID, Amount, 
              RegistrationDate, CMAccountNo, CMBankName, CMAccountName, RegionID, MemberType, MemberStat, NoAktaPendiri, NoAktaPerubahan, DomisiliPerusahaan, NPWP, IdentitasKepabean, EksportirTerdaftarTimah, PerizinanInstansiEksportir, user_cm, flag_ftp, siup, nib, 
              identitasDiriPengurus, laporanKeuangan, suratRefBankNegeri, companyProfile, domisili, StatusDomisiliFlag
 FROM   SKD.ClearingMember
-WHERE (Code = @code)";
+WHERE (CMID = @cmid)";
             this._commandCollection[1].CommandType = global::System.Data.CommandType.Text;
-            this._commandCollection[1].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@code", global::System.Data.SqlDbType.VarChar, 20, global::System.Data.ParameterDirection.Input, 0, 0, "Code", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._commandCollection[1].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@cmid", global::System.Data.SqlDbType.Decimal, 9, global::System.Data.ParameterDirection.Input, 18, 0, "CMID", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._commandCollection[2] = new global::System.Data.SqlClient.SqlCommand();
+            this._commandCollection[2].Connection = this.Connection;
+            this._commandCollection[2].CommandText = @"SELECT Code, ApprovalStatus, EffectiveStartDate, CMID, Name, PPKP, Website, CMStatus, AgreementNo, AgreementDate, ExchangeStatus, CertNo, CertDate, SPATraderNo, SPATraderDate, SPABrokerNo, SPABrokerDate, PALNLicense, CompAnniversary, CompImageID, AgreementType, 
+             CreatedBy, CreatedDate, LastUpdatedBy, LastUpdatedDate, EffectiveEndDate, ApprovalDesc, OriginalID, ActionFlag, InitialMarginMultiplier, MinReqInitialMarginIDR, MinReqInitialMarginUSD, Address, Email, PhoneNumber, ContactPersonName, ContactPersonPhone, 
+             RegistrationDate, CMAccountNo, CMBankName, CMAccountName, RegionID, MemberType, MemberStat, NoAktaPendiri, NoAktaPerubahan, DomisiliPerusahaan, NPWP, IdentitasKepabean, EksportirTerdaftarTimah, PerizinanInstansiEksportir, user_cm, flag_ftp, siup, nib, 
+             identitasDiriPengurus, laporanKeuangan, suratRefBankNegeri, companyProfile, domisili, StatusDomisiliFlag
+FROM   SKD.ClearingMember
+WHERE (Code = @code)";
+            this._commandCollection[2].CommandType = global::System.Data.CommandType.Text;
+            this._commandCollection[2].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@code", global::System.Data.SqlDbType.VarChar, 20, global::System.Data.ParameterDirection.Input, 0, 0, "Code", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -9479,8 +9489,34 @@ WHERE (Code = @code)";
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Fill, false)]
-        public virtual int FillByCode(DataSet3.ClearingMemberDataTable dataTable, string code) {
+        public virtual int FillByCmid(DataSet3.ClearingMemberDataTable dataTable, decimal cmid) {
             this.Adapter.SelectCommand = this.CommandCollection[1];
+            this.Adapter.SelectCommand.Parameters[0].Value = ((decimal)(cmid));
+            if ((this.ClearBeforeFill == true)) {
+                dataTable.Clear();
+            }
+            int returnValue = this.Adapter.Fill(dataTable);
+            return returnValue;
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Select, false)]
+        public virtual DataSet3.ClearingMemberDataTable GetDataByCmid(decimal cmid) {
+            this.Adapter.SelectCommand = this.CommandCollection[1];
+            this.Adapter.SelectCommand.Parameters[0].Value = ((decimal)(cmid));
+            DataSet3.ClearingMemberDataTable dataTable = new DataSet3.ClearingMemberDataTable();
+            this.Adapter.Fill(dataTable);
+            return dataTable;
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
+        [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
+        [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Fill, false)]
+        public virtual int FillByCode(DataSet3.ClearingMemberDataTable dataTable, string code) {
+            this.Adapter.SelectCommand = this.CommandCollection[2];
             if ((code == null)) {
                 throw new global::System.ArgumentNullException("code");
             }
@@ -9499,7 +9535,7 @@ WHERE (Code = @code)";
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Select, false)]
         public virtual DataSet3.ClearingMemberDataTable GetDataByCode(string code) {
-            this.Adapter.SelectCommand = this.CommandCollection[1];
+            this.Adapter.SelectCommand = this.CommandCollection[2];
             if ((code == null)) {
                 throw new global::System.ArgumentNullException("code");
             }

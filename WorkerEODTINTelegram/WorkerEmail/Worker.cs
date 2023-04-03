@@ -43,6 +43,11 @@ using Microsoft.Extensions.Configuration;
 using static System.Net.WebRequestMethods;
 using Serilog;
 using File = System.IO.File;
+using System.Net.Mail;
+using Microsoft.Kiota.Abstractions;
+using Method = RestSharp.Method;
+using Google.Apis.Drive.v3.Data;
+using IronXL.Xml.Dml.Diagram;
 
 namespace WorkerEmail
 {
@@ -257,7 +262,7 @@ namespace WorkerEmail
                     Bot.SendTextMessageAsync(message.Chat.Id, "_#searchsuretybond# Please reply to the message\n{member code}" + "_", ParseMode.Markdown);
                     monitoringServices("DOP_TinTelegram", "I", "Request search suretybond timah di telegram");
                 }
-                if (text == "/sendnotapemberitahuan@Timah_Bot")
+                if (text == "/sendemail@Timah_Bot")
                 {
                     sendemailnotapemberitahuan(message.Chat.Id);
                     monitoringServices("DOP_TinTelegram", "I", "Send email nota pemberitahuan");
@@ -471,6 +476,11 @@ namespace WorkerEmail
                 string[] quotes = message.Split('*');
                 var dr = new DataSet1TableAdapters.TradeFeedTableAdapter();
                 var dt = dr.GetDataByNoSi(quotes[3]);
+                var codebuyer = "";
+                var codeSeller = "";
+                var dr_cmid = new DataSet3TableAdapters.ClearingMemberTableAdapter();
+                var splitexchangereff = quotes[4].Split("ExchangeReff : ");
+                var exchangeRef = splitexchangereff[1].Split("\n")[0];
 
                 for (int k = 0; k < dt.Count; k++)
                 {
@@ -480,9 +490,10 @@ namespace WorkerEmail
                     dt[k].LastUpdatedBy = "Robot KBI";
                     dt[k].LastUpdatedDate = DateTime.Now;
                     dr.Update(dt);
+                    codebuyer = dr_cmid.GetDataByCmid(dt[k].BuyerCMID)[0].Code;
+                    codeSeller = dr_cmid.GetDataByCmid(dt[k].SellerCMID)[0].Code;
                 }
-
-                sendNOS(chat_id, quotes[3]);
+                sendNOS(chat_id, quotes[3], codebuyer,codeSeller, exchangeRef);
 
             }
             catch (Exception xx)
@@ -491,7 +502,7 @@ namespace WorkerEmail
                 monitoringServices("DOP_TinTelegram", "E", "Fail approve SI Time: " + xx.Message);
             }
         }
-        public static void sendNOS(long chat_id, string noSi)
+        public static void sendNOS(long chat_id, string noSi, string codebuyer, string codeseller, string exchangereff)
         {
             try
             {
@@ -505,20 +516,20 @@ namespace WorkerEmail
                     fileName = fileName.Replace(":", "_");
                 }
 
-                string path = getReportSSRSPDF("RptNoticeOfShipment", "&NoSI=" + noSi, fileName);
+                string path = getReportSSRSPDF("RptNoticeOfShipment", "&NoSI=" + noSi+ "&exchangeRef="+exchangereff, fileName);
 
                 sendFileTelegram("-1001649045625", path);
-                
-                sendEmailNOS(path, fileName);
+
+                sendEmailNOS(path, fileName, codebuyer,codeseller);
                 Bot.SendTextMessageAsync(chat_id, "Success send email Notice Of Shipment\n" + DateTime.Now.ToString("hh:mm:ss"), ParseMode.Markdown);
-               
+
             }
             catch (Exception x)
             {
                 Bot.SendTextMessageAsync(chat_id, "_Send NOS failed : " + x.Message + "\n" + DateTime.Now.ToString("hh: mm:ss") + "_", ParseMode.Markdown);
             }
         }
-        public static void sendEmailNOS(string filePath, string filename)
+        public static void sendEmailNOS(string filePath, string filename, string codebuyer, string codeSeller)
         {
             var stream = System.IO.File.Open(filePath, FileMode.Open);
             //var x = new Attachment(stream);
@@ -526,6 +537,10 @@ namespace WorkerEmail
             string text = System.IO.File.ReadAllText(file);
             text = text.Replace("#NoSI#", filename);
             var email_nos = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("ParameterEmail")["email_nos"].Split(",");
+
+            var dt_email = new DataSet3TableAdapters.EventRecipientListTableAdapter();
+            var dr_email_buyer = dt_email.GetDataByCode(codebuyer);
+            var dr_email_seller = dt_email.GetDataByCode(codeSeller);
 
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
             System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
@@ -535,6 +550,21 @@ namespace WorkerEmail
             for (int i = 1; i < email_nos.Length; i++)
             {
                 message.CC.Add(new System.Net.Mail.MailAddress(email_nos[i]));
+            }
+            if (dr_email_buyer.Count != 0)
+            {
+                foreach (var item in dr_email_buyer)
+                {
+                    message.CC.Add(new System.Net.Mail.MailAddress(item.EmailAddress));
+                }
+            }
+
+            if (dr_email_seller.Count != 0)
+            {
+                foreach (var item in dr_email_seller)
+                {
+                    message.CC.Add(new System.Net.Mail.MailAddress(item.EmailAddress));
+                }
             }
 
             message.Subject = "Notice Of Shipment";
@@ -546,7 +576,7 @@ namespace WorkerEmail
 
             smtp.EnableSsl = true;
             smtp.UseDefaultCredentials = true;
-            smtp.Credentials = new NetworkCredential("automatic_ptkbi@outlook.com", "Jakarta2021");
+            smtp.Credentials = new NetworkCredential("automatic_ptkbi@outlook.com", "Jakarta2023");
 
             smtp.Send(message);
 
@@ -659,7 +689,7 @@ namespace WorkerEmail
                         var date1 = DateTime.Now.ToString("dd MMMM yyyy");
                         if (format_old == true)
                         {
-                            date = DateTime.ParseExact(item.Date, "dd/MM/yy", CultureInfo.InvariantCulture);
+                            date = DateTime.ParseExact(item.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                         }
                         else
                         {
@@ -1165,13 +1195,13 @@ namespace WorkerEmail
                     dr = dt.GetData(Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 09:00")), Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 13:00")));
                 }
                 //cek sesi dua
-                else if (DateTime.Now.Hour >= 16 && DateTime.Now.Hour <= 17)
+                else if (DateTime.Now.Hour >= 16 && DateTime.Now.Hour <= 19)
                 {
                     Bot.SendTextMessageAsync(chat_id, "_checkhing trade sesi 2 " + DateTime.Now.ToString("HH:mm:ss") + "_", ParseMode.Markdown);
-                    dr = dt.GetData(Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 14:00")), Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 18:00")));
+                    dr = dt.GetData(Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 14:00")), Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 19:00")));
                 }
                 //cek sesi tiga
-                else if (DateTime.Now.Hour >= 18 && DateTime.Now.Hour <= 22)
+                else if (DateTime.Now.Hour >= 20 && DateTime.Now.Hour <= 22)
                 {
                     Bot.SendTextMessageAsync(chat_id, "_checkhing trade sesi 3 " + DateTime.Now.ToString("HH:mm:ss") + "_", ParseMode.Markdown);
                     dr = dt.GetData(Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 19:00")), Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd 22:00")));
@@ -1181,80 +1211,88 @@ namespace WorkerEmail
                 {
                     foreach (var item in dr)
                     {
-                        if (item.SellerId.Substring(0, 4) == "SMS3" || item.BuyerId.Substring(0, 4) == "BAL0")
+                        //if (item.SellerId.Substring(0, 4) == "SMS3" || item.BuyerId.Substring(0, 4) == "BAL0" || item.BuyerId.Substring(0,4) == "BTEL")
+                        //{
+                        string path = getReportSSRSPDF("RptEDONotaPemberitahuanRevision", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&sellerid=" + item.SellerId.Substring(0, 4) + "&buyerid=" + item.BuyerId.Substring(0, 4), "Nota Pemberitahuan " + item.BuyerId + "_"+DateTime.Now.ToString("HHmmss"));
+                        //var stream1 = System.IO.File.Open(path, FileMode.Open);
+                        string path2 = getReportSSRSPDF("RptEODTradeRegisterForWA", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&clearingMemberId=" + item.BuyerId.Substring(0, 4) + "&codeSeller=" + item.SellerId.Substring(0, 4), "Trade Register Buyer" + item.BuyerId+"_" + DateTime.Now.ToString("HHmmss"));
+                        string path3 = getReportSSRSPDF("RptEODTradeRegisterForWA", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&clearingMemberId=" + item.SellerId.Substring(0, 4) + "&codeSeller=" + item.BuyerId.Substring(0, 4), "Trade Register Seller" + item.BuyerId + "_" + DateTime.Now.ToString("HHmmss"));
+
+                        //var stream2 = System.IO.File.Open(path2, FileMode.Open);
+                        var dt_name = new DataSet3TableAdapters.ClearingMemberTableAdapter();
+                        var dr_name = dt_name.GetDataByCode(item.BuyerId.Substring(0, 4));
+                        var dr_name_seller = dt_name.GetDataByCode(item.SellerId.Substring(0, 4));
+                        var dt_email = new DataSet3TableAdapters.EventRecipientListTableAdapter();
+                        var dr_email_buyer = dt_email.GetDataByCode(item.BuyerId.Substring(0, 4));
+                        var dr_email_seller = dt_email.GetDataByCode(item.SellerId.Substring(0, 4));
+                        var dr_total = new DataSet3TableAdapters.DataTable1TableAdapter();
+                        var dt_total = dr_total.GetData(item.BusinessDate, item.BuyerId.Substring(0, 4), item.SellerId.Substring(0, 4));
+
+                        try
                         {
-                            string path = getReportSSRSPDF("RptEDONotaPemberitahuanRevision", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&sellerid=" + item.SellerId.Substring(0, 4) + "&buyerid=" + item.BuyerId.Substring(0, 4), "Nota Pemberitahuan " + DateTime.Now.ToString("HH_mm_ss_sss"));
-                            var stream1 = System.IO.File.Open(path, FileMode.Open);
-                            string path2 = getReportSSRSPDF("RptEODTradeRegisterForWA", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&clearingMemberId=" + item.BuyerId.Substring(0, 4) + "&codeSeller=" + item.SellerId.Substring(0, 4), "Trade Register " + DateTime.Now.ToString("HH_mm_ss_sss"));
-                            var stream2 = System.IO.File.Open(path2, FileMode.Open);
-                            var dt_name = new DataSet3TableAdapters.ClearingMemberTableAdapter();
-                            var dr_name = dt_name.GetDataByCode(item.BuyerId.Substring(0, 4));
-                            var dr_name_seller = dt_name.GetDataByCode(item.SellerId.Substring(0, 4));
-                            var dt_email = new DataSet3TableAdapters.EventRecipientListTableAdapter();
-                            var dr_email_buyer = dt_email.GetDataByCode(item.BuyerId.Substring(0, 4));
-                            var dr_email_seller = dt_email.GetDataByCode(item.SellerId.Substring(0, 4));
-                            var dr_total = new DataSet3TableAdapters.DataTable1TableAdapter();
-                            var dt_total = dr_total.GetData(item.BusinessDate, item.BuyerId.Substring(0, 4), item.SellerId.Substring(0, 4));
+                            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12; string file = AppDomain.CurrentDomain.BaseDirectory + "\\index.html";
+                            string text = System.IO.File.ReadAllText(file);
+                            text = text.Replace("#amount#", dt_total[0].Amount.ToString("#,##0.00"));
+                            text = text.Replace("#businessdate#", item.BusinessDate.ToString("dd-MMM-yyyy"));
+                            text = text.Replace("#name#", dr_name[0].Name);
+                            text = text.Replace("#seller#", dr_name_seller[0].Name);
+                            text = text.Replace("#nova#", dt_total[0].AccountNo);
 
-                            try
+                            string seting_email_file = AppDomain.CurrentDomain.BaseDirectory + "\\seting_email.txt";
+                            string seting_email = System.IO.File.ReadAllText(seting_email_file);
+                            string[] email_cc = seting_email.Split("\r\n");
+
+                            System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
+                            System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
+                            message.From = new System.Net.Mail.MailAddress("pb@ptkbi.com");
+
+                            foreach (var item_send in dr_email_buyer)
                             {
-                                string file = AppDomain.CurrentDomain.BaseDirectory + "\\index.html";
-                                string text = System.IO.File.ReadAllText(file);
-                                text = text.Replace("#amount#", dt_total[0].Amount.ToString("#,##0.00"));
-                                text = text.Replace("#businessdate#", item.BusinessDate.ToString("dd-MMM-yyyy"));
-                                text = text.Replace("#name#", dr_name[0].Name);
-                                text = text.Replace("#seller#", dr_name_seller[0].Name);
-                                text = text.Replace("#nova#", dt_total[0].AccountNo);
-
-                                string seting_email_file = AppDomain.CurrentDomain.BaseDirectory + "\\seting_email.txt";
-                                string seting_email = System.IO.File.ReadAllText(seting_email_file);
-                                string[] email_cc = seting_email.Split("\r\n");
-
-                                System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
-                                System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
-                                message.From = new System.Net.Mail.MailAddress("pb@ptkbi.com");
-                                foreach (var item_send in dr_email_buyer)
-                                {
-                                    message.To.Add(new System.Net.Mail.MailAddress(item_send.EmailAddress));
-                                }
-
-                                foreach (var item_send in dr_email_seller)
-                                {
-                                    message.CC.Add(new System.Net.Mail.MailAddress(item_send.EmailAddress));
-                                }
-                                foreach (var item_email in email_cc)
-                                {
-                                    message.CC.Add(new System.Net.Mail.MailAddress(item_email));
-                                }
-
-                                message.Subject = "Payment Obligation for " + item.BusinessDate.ToString("dd-MM-yyyy") + " trading day";
-                                message.IsBodyHtml = true; //to make message body as html  
-                                message.Body = text;
-                                message.Attachments.Add(new System.Net.Mail.Attachment(stream1, "Nota Pemberitahuan.pdf"));
-                                message.Attachments.Add(new System.Net.Mail.Attachment(stream2, "Trade Register.pdf"));
-                                smtp.Port = 25;
-                                smtp.Host = "10.10.10.2"; //for gmail host  
-                                smtp.EnableSsl = true;
-                                smtp.UseDefaultCredentials = false;
-                                smtp.EnableSsl = false;
-                                smtp.DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network;
-                                new Task(delegate
-                                {
-                                    smtp.Send(message);
-                                }).Start();
+                                message.To.Add(new System.Net.Mail.MailAddress(item_send.EmailAddress));
                             }
-                            catch (Exception ex)
+
+                            foreach (var item_send in dr_email_seller)
                             {
-                                monitoringServices("DOP_TinTelegram", "E", "Send email nota pemberitahuan error " + ex.Message);
+                                message.CC.Add(new System.Net.Mail.MailAddress(item_send.EmailAddress));
                             }
-                            Bot.SendTextMessageAsync(chat_id, "_Success proccesing send email MSP atau Amalgamet " + DateTime.Now.ToString("HH:mm:ss") + "_", ParseMode.Markdown);
+                            foreach (var item_email in email_cc)
+                            {
+                                message.CC.Add(new System.Net.Mail.MailAddress(item_email));
+                            }
+
+                            message.Subject = "Payment Obligation for " + item.BusinessDate.ToString("dd-MM-yyyy") + " trading day";
+                            message.IsBodyHtml = true; //to make message body as html  
+                            message.Body = text;
+                            message.Attachments.Add(new System.Net.Mail.Attachment(path3));
+                            message.Attachments.Add(new System.Net.Mail.Attachment(path2));
+                            message.Attachments.Add(new System.Net.Mail.Attachment(path));
+                            //message.Attachments.Add(new System.Net.Mail.Attachment(stream1, "Nota Pemberitahuan.pdf"));
+                            //message.Attachments.Add(new System.Net.Mail.Attachment(stream2, "Trade Register.pdf"));
+                            smtp.Port = 25;
+                            smtp.Host = "10.10.10.2"; //for gmail host  
+                            smtp.EnableSsl = true;
+                            smtp.UseDefaultCredentials = false;
+                            smtp.EnableSsl = false;
+                            smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                            new Task(delegate
+                            {
+                                smtp.Send(message);
+                            }).Start();
+                            Bot.SendTextMessageAsync(chat_id, "_Success proccesing send email " + message.To.ToString() + "_", ParseMode.Markdown);
 
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            Bot.SendTextMessageAsync(chat_id, "_Tidak ada transaksi Amalgamet atau MSP " + DateTime.Now.ToString("HH:mm:ss") + "_", ParseMode.Markdown);
+                            monitoringServices("DOP_TinTelegram", "E", "Send email nota pemberitahuan error " + ex.Message);
                         }
+
+                        //}
+                        //else
+                        //{
+                        //    Bot.SendTextMessageAsync(chat_id, "_Tidak ada transaksi Amalgamet, Traxys dan MSP " + DateTime.Now.ToString("HH:mm:ss") + "_", ParseMode.Markdown);
+                        //}
                     }
+                    Bot.SendTextMessageAsync(chat_id, "Success send email");
                 }
                 else
                 {
@@ -1318,6 +1356,7 @@ namespace WorkerEmail
                 }
                 stream.Close();
                 fs.Close();
+
                 return path;
 
             }
