@@ -15,7 +15,7 @@
           "Noksa.WebDriver.ScreenshotsExtensions": "0.1.5.4",
           "RestSharp": "107.3.0",
           "Selenium.WebDriver": "4.1.0",
-          "Selenium.WebDriver.ChromeDriver": "107.0.5304.6200",
+          "Selenium.WebDriver.ChromeDriver": "108.0.5359.7100",
           "Serilog.AspNetCore": "5.0.0",
           "Serilog.Sinks.Console": "4.0.2-dev-00890",
           "System.Data.SqlClient": "4.8.3",
@@ -466,7 +466,7 @@
           }
         }
       },
-      "Selenium.WebDriver.ChromeDriver/107.0.5304.6200": {},
+      "Selenium.WebDriver.ChromeDriver/108.0.5359.7100": {},
       "Serilog/2.10.0": {
         "runtime": {
           "lib/netstandard2.1/Serilog.dll": {
@@ -938,12 +938,12 @@
       "path": "selenium.webdriver/4.1.0",
       "hashPath": "selenium.webdriver.4.1.0.nupkg.sha512"
     },
-    "Selenium.WebDriver.ChromeDriver/107.0.5304.6200": {
+    "Selenium.WebDriver.ChromeDriver/108.0.5359.7100": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-0xkXvzwRXVbduG62Z7+vhM4a85x3mWlfGUSQn+4PdeVJdkkssVe4rV80J+WBEOfUJAjga7L6YydFkbd9ONJqxQ==",
-      "path": "selenium.webdriver.chromedriver/107.0.5304.6200",
-      "hashPath": "selenium.webdriver.chromedriver.107.0.5304.6200.nupkg.sha512"
+      "sha512": "sha512-wrDUVsoQHQct9BodCFgRi1LMKGhwv27ANuS8l7ZXcOn/VS2NqcxxBhSAkcucx4CoZgidny0+ifnFS95nTmnVvg==",
+      "path": "selenium.webdriver.chromedriver/108.0.5359.7100",
+      "hashPath": "selenium.webdriver.chromedriver.108.0.5359.7100.nupkg.sha512"
     },
     "Serilog/2.10.0": {
       "type": "package",

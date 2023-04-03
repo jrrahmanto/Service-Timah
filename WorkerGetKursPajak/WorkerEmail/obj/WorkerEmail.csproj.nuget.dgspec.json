@@ -75,7 +75,7 @@
             },
             "Selenium.WebDriver.ChromeDriver": {
               "target": "Package",
-              "version": "[107.0.5304.6200, )"
+              "version": "[108.0.5359.7100, )"
             },
             "Serilog.AspNetCore": {
               "target": "Package",

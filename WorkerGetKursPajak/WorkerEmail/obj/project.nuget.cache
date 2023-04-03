@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "wXEMYGQet+HjuNwN2FxC7iIiAfq4iElgKyTZSmvdbWoIV1FSK8Z9cEJOBGyP64UQ8vNp4f4MYhtWtyAMYmuAdQ==",
+  "dgSpecHash": "YMIOOGA3UAvDgw6TmNUHpmt/C7e4W4KQo09haP/bBTHy0RrIJp0lSIb3rtx7CmkdZGAlQCIRXaYF/WLWeyq9cA==",
   "success": true,
   "projectFilePath": "D:\\Source Code Service\\service_timah\\WorkerGetKursPajak\\WorkerEmail\\WorkerEmail.csproj",
   "expectedPackageFiles": [
@@ -43,7 +43,7 @@
     "C:\\Users\\IFA DTI\\.nuget\\packages\\runtime.win-x86.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
     "C:\\Users\\IFA DTI\\.nuget\\packages\\selenium.support\\3.8.0\\selenium.support.3.8.0.nupkg.sha512",
     "C:\\Users\\IFA DTI\\.nuget\\packages\\selenium.webdriver\\4.1.0\\selenium.webdriver.4.1.0.nupkg.sha512",
-    "C:\\Users\\IFA DTI\\.nuget\\packages\\selenium.webdriver.chromedriver\\107.0.5304.6200\\selenium.webdriver.chromedriver.107.0.5304.6200.nupkg.sha512",
+    "C:\\Users\\IFA DTI\\.nuget\\packages\\selenium.webdriver.chromedriver\\108.0.5359.7100\\selenium.webdriver.chromedriver.108.0.5359.7100.nupkg.sha512",
     "C:\\Users\\IFA DTI\\.nuget\\packages\\serilog\\2.10.0\\serilog.2.10.0.nupkg.sha512",
     "C:\\Users\\IFA DTI\\.nuget\\packages\\serilog.aspnetcore\\5.0.0\\serilog.aspnetcore.5.0.0.nupkg.sha512",
     "C:\\Users\\IFA DTI\\.nuget\\packages\\serilog.extensions.hosting\\4.2.0\\serilog.extensions.hosting.4.2.0.nupkg.sha512",
