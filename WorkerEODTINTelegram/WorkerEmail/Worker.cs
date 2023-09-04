@@ -48,6 +48,8 @@ using Microsoft.Kiota.Abstractions;
 using Method = RestSharp.Method;
 using Google.Apis.Drive.v3.Data;
 using IronXL.Xml.Dml.Diagram;
+using Microsoft.Extensions.Options;
+using Google.Protobuf.WellKnownTypes;
 
 namespace WorkerEmail
 {
@@ -151,11 +153,11 @@ namespace WorkerEmail
                         generateInvoiceemasoff(message.Chat.Id, text);
                         monitoringServices("DOP_TinTelegram", "I", "Generate invoice emas off exchange timah di telegram");
                     }
-                    if (msg.Contains("#uspcalculatefeeresiprokal#"))
-                    {
-                        uspcalculatefeeresiprokal(message.Chat.Id, text);
-                        monitoringServices("DOP_TinTelegram", "I", "Generate report usp calculate fee resiprokal timah di telegram");
-                    }
+                    //if (msg.Contains("#uspcalculatefeeresiprokal#"))
+                    //{
+                    //    uspcalculatefeeresiprokal(message.Chat.Id, text);
+                    //    monitoringServices("DOP_TinTelegram", "I", "Generate report usp calculate fee resiprokal timah di telegram");
+                    //}
                     if (msg.Contains("#searchsuretybond#"))
                     {
                         searchSuretyBond(message.Chat.Id, text);
@@ -170,6 +172,10 @@ namespace WorkerEmail
                     {
                         getdailystatementemas(message.Chat.Id, text, msg);
                         monitoringServices("DOP_TinTelegram", "I", "Get report daily statement emas di telegram");
+                    }
+                    if (msg.Contains("#receiptlokal"))
+                    {
+                        uspcalculatefeeresiprokal(message.Chat.Id, text);
                     }
                 }
                 if (text == "/cektradefeed@Timah_Bot")
@@ -197,11 +203,11 @@ namespace WorkerEmail
                     rolloverbgr(message.Chat.Id);
                     monitoringServices("DOP_TinTelegram", "I", "EXEC SP rollover bgr timah di telegram");
                 }
-                if (text == "/invoicedalamnegeri@Timah_Bot")
-                {
-                    monitoringServices("DOP_TinTelegram", "I", "Request invoice dalam negeri di telegram");
-                    Bot.SendTextMessageAsync(message.Chat.Id, "_#invoice timah dalam negeri# Please reply to the message\n{yyyy-mm-dd}" + "_", ParseMode.Markdown);
-                }
+                //if (text == "/invoicedalamnegeri@Timah_Bot")
+                //{
+                //    monitoringServices("DOP_TinTelegram", "I", "Request invoice dalam negeri di telegram");
+                //    Bot.SendTextMessageAsync(message.Chat.Id, "_#invoice timah dalam negeri# Please reply to the message\n{yyyy-mm-dd}" + "_", ParseMode.Markdown);
+                //}
                 if (text == "/financialinfokbi@Timah_Bot")
                 {
                     financialInfoKbi(message.Chat.Id);
@@ -247,11 +253,11 @@ namespace WorkerEmail
                     monitoringServices("DOP_TinTelegram", "I", "Request invoice emas off exchange di telegram");
                     Bot.SendTextMessageAsync(message.Chat.Id, "_#invoice emas off# Please reply to the message\n{yyyy-mm-dd} datestart\n{yyyy-mm-dd} dateend\n{vendorcode}\n====\nplm = pluangmas\nse = sakuemas" + "_", ParseMode.Markdown);
                 }
-                if (text == "/calculatefeeresiprokal@Timah_Bot")
-                {
-                    monitoringServices("DOP_TinTelegram", "I", "Request usp calculate fee resiprokal di telegram");
-                    Bot.SendTextMessageAsync(message.Chat.Id, "_#uspcalculatefeeresiprokal# Please reply to the message\n{yyyy-mm-dd} datestart\n{yyyy-mm-dd} dateend\n{yyyy-mm-dd} invoice date" + "_", ParseMode.Markdown);
-                }
+                //if (text == "/calculatefeeresiprokal@Timah_Bot")
+                //{
+                //    monitoringServices("DOP_TinTelegram", "I", "Request usp calculate fee resiprokal di telegram");
+                //    Bot.SendTextMessageAsync(message.Chat.Id, "_#uspcalculatefeeresiprokal# Please reply to the message\n{yyyy-mm-dd} datestart\n{yyyy-mm-dd} dateend\n{yyyy-mm-dd} invoice date" + "_", ParseMode.Markdown);
+                //}
                 if (text == "/rekapreporttimah@Timah_Bot")
                 {
                     rekapReportTimah(message.Chat.Id);
@@ -272,6 +278,11 @@ namespace WorkerEmail
                     Bot.SendTextMessageAsync(message.Chat.Id, "_#requestdailystatementemas# Please reply to the message\nstartdate {yyyy-MM-dd}\nenddate {yyyy-MM-dd}\nvendorcode {150/152}" + "_", ParseMode.Markdown);
                     monitoringServices("DOP_TinTelegram", "I", "Request daily statement emas off di telegram");
                 }
+                if (text.Contains("receiptlokal"))
+                {
+                    Bot.SendTextMessageAsync(message.Chat.Id, "_#receiptlokal\nReply this message use format\n{startdate}\n{enddate}_", ParseMode.Markdown);
+                }
+
             }
             if (message.Type == MessageType.Document)
             {
@@ -474,8 +485,11 @@ namespace WorkerEmail
                 Bot.SendTextMessageAsync(chat_id, "_Processing approve SI start\n" + DateTime.Now.ToString("hh: mm:ss") + "_", ParseMode.Markdown);
 
                 string[] quotes = message.Split('*');
+                // Remove whitespaces from both ends
+                string afterTrim = (quotes[3].Trim());
+
                 var dr = new DataSet1TableAdapters.TradeFeedTableAdapter();
-                var dt = dr.GetDataByNoSi(quotes[3]);
+                var dt = dr.GetDataByNoSi(afterTrim);
                 var codebuyer = "";
                 var codeSeller = "";
                 var dr_cmid = new DataSet3TableAdapters.ClearingMemberTableAdapter();
@@ -493,7 +507,7 @@ namespace WorkerEmail
                     codebuyer = dr_cmid.GetDataByCmid(dt[k].BuyerCMID)[0].Code;
                     codeSeller = dr_cmid.GetDataByCmid(dt[k].SellerCMID)[0].Code;
                 }
-                sendNOS(chat_id, quotes[3], codebuyer,codeSeller, exchangeRef);
+                sendNOS(chat_id, quotes[3], codebuyer, codeSeller, exchangeRef);
 
             }
             catch (Exception xx)
@@ -516,11 +530,11 @@ namespace WorkerEmail
                     fileName = fileName.Replace(":", "_");
                 }
 
-                string path = getReportSSRSPDF("RptNoticeOfShipment", "&NoSI=" + noSi+ "&exchangeRef="+exchangereff, fileName);
+                string path = getReportSSRSPDF("RptNoticeOfShipment", "&NoSI=" + noSi + "&exchangeRef=" + exchangereff, fileName);
 
                 sendFileTelegram("-1001649045625", path);
 
-                sendEmailNOS(path, fileName, codebuyer,codeseller);
+                sendEmailNOS(path, fileName, codebuyer, codeseller);
                 Bot.SendTextMessageAsync(chat_id, "Success send email Notice Of Shipment\n" + DateTime.Now.ToString("hh:mm:ss"), ParseMode.Markdown);
 
             }
@@ -531,56 +545,81 @@ namespace WorkerEmail
         }
         public static void sendEmailNOS(string filePath, string filename, string codebuyer, string codeSeller)
         {
-            var stream = System.IO.File.Open(filePath, FileMode.Open);
-            //var x = new Attachment(stream);
-            string file = AppDomain.CurrentDomain.BaseDirectory + "\\index_nos.html";
-            string text = System.IO.File.ReadAllText(file);
-            text = text.Replace("#NoSI#", filename);
-            var email_nos = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("ParameterEmail")["email_nos"].Split(",");
-
-            var dt_email = new DataSet3TableAdapters.EventRecipientListTableAdapter();
-            var dr_email_buyer = dt_email.GetDataByCode(codebuyer);
-            var dr_email_seller = dt_email.GetDataByCode(codeSeller);
-
-            System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
-            System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
-            message.From = new System.Net.Mail.MailAddress("automatic_ptkbi@outlook.com");
-
-            message.To.Add(new System.Net.Mail.MailAddress(email_nos[0]));
-            for (int i = 1; i < email_nos.Length; i++)
+            try
             {
-                message.CC.Add(new System.Net.Mail.MailAddress(email_nos[i]));
-            }
-            if (dr_email_buyer.Count != 0)
-            {
-                foreach (var item in dr_email_buyer)
+                var stream = System.IO.File.Open(filePath, FileMode.Open);
+                //var x = new Attachment(stream);
+                string file = AppDomain.CurrentDomain.BaseDirectory + "\\index_nos.html";
+                string text = System.IO.File.ReadAllText(file);
+                text = text.Replace("#NoSI#", filename);
+                var email_nos = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("ParameterEmail")["email_nos"].Split(",");
+
+                var dt_email = new DataSet3TableAdapters.EventRecipientListTableAdapter();
+                var dr_email_buyer = dt_email.GetDataByCode(codebuyer);
+                var dr_email_seller = dt_email.GetDataByCode(codeSeller);
+
+                System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
+                System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
+                message.From = new System.Net.Mail.MailAddress("pb@ptkbi.com");
+
+                //System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
+                //System.Net.Mail.SmtpClient smtp = new System.Net.Mail.SmtpClient();
+                //message.From = new System.Net.Mail.MailAddress("pb@ptkbi.com");
+
+                message.To.Add(new System.Net.Mail.MailAddress(email_nos[0]));
+                for (int i = 1; i < email_nos.Length; i++)
                 {
-                    message.CC.Add(new System.Net.Mail.MailAddress(item.EmailAddress));
+                    message.CC.Add(new System.Net.Mail.MailAddress(email_nos[i]));
                 }
-            }
-
-            if (dr_email_seller.Count != 0)
-            {
-                foreach (var item in dr_email_seller)
+                if (dr_email_buyer.Count != 0)
                 {
-                    message.CC.Add(new System.Net.Mail.MailAddress(item.EmailAddress));
+                    foreach (var item in dr_email_buyer)
+                    {
+                        message.CC.Add(new System.Net.Mail.MailAddress(item.EmailAddress));
+                    }
                 }
+
+                if (dr_email_seller.Count != 0)
+                {
+                    foreach (var item in dr_email_seller)
+                    {
+                        message.CC.Add(new System.Net.Mail.MailAddress(item.EmailAddress));
+                    }
+                }
+                message.Bcc.Add(new System.Net.Mail.MailAddress("miftarahmawadi@yahoo.com"));
+                message.Bcc.Add(new System.Net.Mail.MailAddress("infotech.kbi@gmail.com"));
+
+                smtp.Port = 25;
+                smtp.Host = "10.10.10.2"; //for gmail host  
+                smtp.EnableSsl = true;
+                smtp.UseDefaultCredentials = false;
+                smtp.EnableSsl = false;
+                smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                message.Subject = "notice of shipment";
+                message.IsBodyHtml = true; //to make message body as html  
+                message.Body = text;
+                message.Attachments.Add(new System.Net.Mail.Attachment(stream, filename + ".pdf"));
+
+                //message.Subject = "notice of shipment";
+                //message.IsBodyHtml = true; //to make message body as html  
+                //message.Body = text;
+                //message.Attachments.Add(new System.Net.Mail.Attachment(stream, filename + ".pdf"));
+                //smtp.Port = 587;
+                //smtp.Host = "smtp.outlook.com"; //for gmail host  
+
+                //smtp.EnableSsl = true;
+                //smtp.UseDefaultCredentials = true;
+                //smtp.Credentials = new NetworkCredential("automatic_ptkbi@outlook.com", "jakarta2023");
+
+                smtp.Send(message);
+
+                stream.Close();
+
             }
+            catch (Exception ex)
+            {
 
-            message.Subject = "Notice Of Shipment";
-            message.IsBodyHtml = true; //to make message body as html  
-            message.Body = text;
-            message.Attachments.Add(new System.Net.Mail.Attachment(stream, filename + ".pdf"));
-            smtp.Port = 587;
-            smtp.Host = "smtp.outlook.com"; //for gmail host  
-
-            smtp.EnableSsl = true;
-            smtp.UseDefaultCredentials = true;
-            smtp.Credentials = new NetworkCredential("automatic_ptkbi@outlook.com", "Jakarta2023");
-
-            smtp.Send(message);
-
-            stream.Close();
+            }
         }
         public static async void financialInfoKbi(long chat_id)
         {
@@ -839,15 +878,24 @@ namespace WorkerEmail
             {
                 Bot.SendTextMessageAsync(chat_id, "_Publish report start" + "_", ParseMode.Markdown);
 
-                IWebDriver ChromeDriver = new ChromeDriver();
+
+                ChromeOptions options = new ChromeOptions();
+                options.AddArguments("start-maximized"); // open Browser in maximized mode
+                options.AddArguments("disable-infobars"); // disabling infobars
+                options.AddArguments("--disable-extensions"); // disabling extensions
+                options.AddArguments("--disable-gpu"); // applicable to windows os only
+                options.AddArguments("--disable-dev-shm-usage"); // overcome limited resource problems
+                options.AddArguments("--no-sandbox"); // Bypass OS security model
+
+                IWebDriver ChromeDriver = new ChromeDriver(options);
                 ChromeDriver.Navigate().GoToUrl("http://septi.ptkbi.com/login.aspx?ReturnUrl=%2fDefault.aspx");
 
                 IWebElement username = ChromeDriver.FindElement(By.Id("uiAuthLogin_UserName"));
                 IWebElement password = ChromeDriver.FindElement(By.Id("uiAuthLogin_Password"));
                 IWebElement submit_login = ChromeDriver.FindElement(By.Id("uiAuthLogin_LoginImageButton"));
 
-                username.SendKeys("Hasto");
-                password.SendKeys("Jakarta2019");
+                username.SendKeys("jujuk");
+                password.SendKeys("Jakarta@2023");
                 submit_login.Click();
                 ChromeDriver.Navigate().GoToUrl("http://septi.ptkbi.com/ClearingAndSettlement/PublishReport2.aspx");
 
@@ -1038,23 +1086,26 @@ namespace WorkerEmail
                 List<string> listPath = new List<string>();
                 var data = msg.Split('\n');
                 Bot.SendTextMessageAsync(chat_id, "_" + "Generate Report Start " + DateTime.Now.ToString("HH: mm:ss") + "_", ParseMode.Markdown);
-
+                var dt = new DataSet3TableAdapters.EOD_GenerateTradeProgressRangeTableAdapter();
+                var ds = dt.GetData(Convert.ToDateTime(data[0]), Convert.ToDateTime(data[1]), "Robot_KBI");
+                string path = getReportSSRSPDFExcel("InvoiceCalculateFeeReceiptLocal", " &start=" + data[0] + "&end=" + data[1], "Receipt Lokal " + DateTime.Now.ToString("HHmmss"), "TIN_EOD_Report");
+                sendFileTelegram(chat_id.ToString(), path);
                 //TKS DALAM NEGERI
-                string path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=D&warehouse=TKS", "Invoice Calculate Receive Dalam Negeri TKS", "TIN_EOD_Report");
-                string urlContents = await uploadGoogle(path, "Invoice Calculate Receive Dalam Negeri TKS", "application/msword");
-                listPath.Add("Inv dalam negeri TKS\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
-                //TKS LUAR NEGERI
-                path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=L&warehouse=TKS", "Invoice Calculate Receive Luar Negeri TKS", "TIN_EOD_Report");
-                urlContents = await uploadGoogle(path, "Invoice Calculate Receive Luar Negeri TKS", "application/msword");
-                listPath.Add("Inv luar negeri TKS\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
-                //BGR DALAM NEGERI
-                path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=D&warehouse=BGR", "Invoice Calculate Receive Dalam Negeri BGR", "TIN_EOD_Report");
-                urlContents = await uploadGoogle(path, "Invoice Calculate Receive Dalam Negeri BGR", "application/msword");
-                listPath.Add("Inv dalam negeri BGR\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
-                //BGR LUAR NEGERI
-                path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=L&warehouse=BGR", "Invoice Calculate Receive LUAR Negeri BGR", "TIN_EOD_Report");
-                urlContents = await uploadGoogle(path, "Invoice Calculate Receive Luar Negeri BGR", "application/msword");
-                listPath.Add("Inv luar negeri BGR\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
+                //string path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=D&warehouse=TKS", "Invoice Calculate Receive Dalam Negeri TKS", "TIN_EOD_Report");
+                //string urlContents = await uploadGoogle(path, "Invoice Calculate Receive Dalam Negeri TKS", "application/msword");
+                //listPath.Add("Inv dalam negeri TKS\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
+                ////TKS LUAR NEGERI
+                //path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=L&warehouse=TKS", "Invoice Calculate Receive Luar Negeri TKS", "TIN_EOD_Report");
+                //urlContents = await uploadGoogle(path, "Invoice Calculate Receive Luar Negeri TKS", "application/msword");
+                //listPath.Add("Inv luar negeri TKS\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
+                ////BGR DALAM NEGERI
+                //path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=D&warehouse=BGR", "Invoice Calculate Receive Dalam Negeri BGR", "TIN_EOD_Report");
+                //urlContents = await uploadGoogle(path, "Invoice Calculate Receive Dalam Negeri BGR", "application/msword");
+                //listPath.Add("Inv dalam negeri BGR\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
+                ////BGR LUAR NEGERI
+                //path = getReportSSRSWord("InvoiceCalculateFeeReceiptLocal", " &PeriodStart=" + data[0] + "&PeriodEnd=" + data[1] + "&InvoiceDate=" + data[2] + "&status=L&warehouse=BGR", "Invoice Calculate Receive LUAR Negeri BGR", "TIN_EOD_Report");
+                //urlContents = await uploadGoogle(path, "Invoice Calculate Receive Luar Negeri BGR", "application/msword");
+                //listPath.Add("Inv luar negeri BGR\nhttps://drive.google.com/file/d/" + urlContents + "/view?usp=drivesdk\n\n");
 
                 Bot.SendTextMessageAsync(chat_id, String.Join("\n", listPath) + "\nProcessing success " + DateTime.Now.ToString("HH:mm:ss"), ParseMode.Markdown);
 
@@ -1213,9 +1264,9 @@ namespace WorkerEmail
                     {
                         //if (item.SellerId.Substring(0, 4) == "SMS3" || item.BuyerId.Substring(0, 4) == "BAL0" || item.BuyerId.Substring(0,4) == "BTEL")
                         //{
-                        string path = getReportSSRSPDF("RptEDONotaPemberitahuanRevision", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&sellerid=" + item.SellerId.Substring(0, 4) + "&buyerid=" + item.BuyerId.Substring(0, 4), "Nota Pemberitahuan " + item.BuyerId + "_"+DateTime.Now.ToString("HHmmss"));
+                        string path = getReportSSRSPDF("RptEDONotaPemberitahuanRevision", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&sellerid=" + item.SellerId.Substring(0, 4) + "&buyerid=" + item.BuyerId.Substring(0, 4), "Nota Pemberitahuan " + item.BuyerId + "_" + DateTime.Now.ToString("HHmmss"));
                         //var stream1 = System.IO.File.Open(path, FileMode.Open);
-                        string path2 = getReportSSRSPDF("RptEODTradeRegisterForWA", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&clearingMemberId=" + item.BuyerId.Substring(0, 4) + "&codeSeller=" + item.SellerId.Substring(0, 4), "Trade Register Buyer" + item.BuyerId+"_" + DateTime.Now.ToString("HHmmss"));
+                        string path2 = getReportSSRSPDF("RptEODTradeRegisterForWA", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&clearingMemberId=" + item.BuyerId.Substring(0, 4) + "&codeSeller=" + item.SellerId.Substring(0, 4), "Trade Register Buyer" + item.BuyerId + "_" + DateTime.Now.ToString("HHmmss"));
                         string path3 = getReportSSRSPDF("RptEODTradeRegisterForWA", "&businessDate=" + item.BusinessDate.ToString("yyyy-MM-dd") + "&clearingMemberId=" + item.SellerId.Substring(0, 4) + "&codeSeller=" + item.BuyerId.Substring(0, 4), "Trade Register Seller" + item.BuyerId + "_" + DateTime.Now.ToString("HHmmss"));
 
                         //var stream2 = System.IO.File.Open(path2, FileMode.Open);
@@ -1610,6 +1661,18 @@ namespace WorkerEmail
             requestWa.AddParameter("data", jsonString);
             var responseWa = client.ExecutePostAsync(requestWa);
             return (responseWa.Result.Content);
+        }
+        private static string uploadDropBox(string name, string path)
+        {
+            var client = new RestClient("https://content.dropboxapi.com");
+
+            var request = new RestRequest("/2/files/upload", Method.Post);
+            request.AddHeader("Content-Type", "application/octet-stream");
+            request.AddHeader("Dropbox-API-Arg", "{\"autorename\":false,\"mode\":\"add\",\"mute\":false,\"path\":\"/" + name + "\",\"strict_conflict\":false}");
+            request.AddHeader("Authorization", "Bearer sl.BbyJ4WO472rBV97LKnWOrGP8CurASbUkHnUYg2jsyA5ldDnV9MQ30zMC4OqJ0ol9DpovuSmyFeKSyMGfHnaFIOpJ_3MrVDcjB7dOEsnEHWxf-sc7y_Ba6KovVXkRM_A2ABwoUqpYuxXL");
+            request.AddParameter("application/octet-stream", path, ParameterType.RequestBody);
+            var response = client.ExecutePostAsync(request);
+            return (response.Result.Content);
         }
 
     }

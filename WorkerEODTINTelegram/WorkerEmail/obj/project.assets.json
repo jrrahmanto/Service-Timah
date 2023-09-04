@@ -1533,7 +1533,7 @@
           "lib/netstandard2.1/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/111.0.5563.6400": {
+      "Selenium.WebDriver.ChromeDriver/116.0.5845.9600": {
         "type": "package",
         "build": {
           "build/Selenium.WebDriver.ChromeDriver.targets": {}
@@ -5359,22 +5359,26 @@
         "selenium.webdriver.nuspec"
       ]
     },
-    "Selenium.WebDriver.ChromeDriver/111.0.5563.6400": {
-      "sha512": "qLM1wbhtfyX/7cdqCHsuos8jKG67ojsOgKLvoHReRYCBPVbbSl/niedtAVzOLpnEn9sk9C7FH6jHc/QQIR0G4w==",
+    "Selenium.WebDriver.ChromeDriver/116.0.5845.9600": {
+      "sha512": "ip8MRM/uVZxn4leTky/Sa7+Yo648lPzeR98/JCtoknq9heUFw2wMUtxdg7VIeI6RisqVUZ6UyD9/+DgkExNLdg==",
       "type": "package",
-      "path": "selenium.webdriver.chromedriver/111.0.5563.6400",
+      "path": "selenium.webdriver.chromedriver/116.0.5845.9600",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "README.md",
         "build/DefinePropertiesChromeDriver.targets",
         "build/Selenium.WebDriver.ChromeDriver.targets",
+        "driver/linux64/LICENSE.chromedriver",
         "driver/linux64/chromedriver",
+        "driver/mac64/LICENSE.chromedriver",
         "driver/mac64/chromedriver",
+        "driver/mac64arm/LICENSE.chromedriver",
         "driver/mac64arm/chromedriver",
+        "driver/win32/LICENSE.chromedriver",
         "driver/win32/chromedriver.exe",
         "nupkg-icon.png",
-        "selenium.webdriver.chromedriver.111.0.5563.6400.nupkg.sha512",
+        "selenium.webdriver.chromedriver.116.0.5845.9600.nupkg.sha512",
         "selenium.webdriver.chromedriver.nuspec"
       ]
     },
@@ -10307,7 +10311,7 @@
       "Noksa.WebDriver.ScreenshotsExtensions >= 0.1.5.4",
       "RestSharp >= 107.3.0",
       "Selenium.WebDriver >= 4.1.0",
-      "Selenium.WebDriver.ChromeDriver >= 111.0.5563.6400",
+      "Selenium.WebDriver.ChromeDriver >= 116.0.5845.9600",
       "Serilog.AspNetCore >= 5.0.0",
       "Serilog.Sinks.Console >= 4.0.2-dev-00890",
       "Spire.Email >= 5.5.0",
@@ -10422,7 +10426,7 @@
           },
           "Selenium.WebDriver.ChromeDriver": {
             "target": "Package",
-            "version": "[111.0.5563.6400, )"
+            "version": "[116.0.5845.9600, )"
           },
           "Serilog.AspNetCore": {
             "target": "Package",
@@ -10461,7 +10465,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
       }
     }
   },
